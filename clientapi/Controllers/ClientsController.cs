@@ -24,5 +24,33 @@ namespace clientapi.Controllers
         {
             return await _context.client.ToListAsync();
         }
+
+        // GET: api/Clients
+        [HttpPost]
+        public async Task<ActionResult<Client>> PostClients(Client client)
+        {
+            // Add the new client to the database context
+            _context.client.Add(client);
+
+            // Save changes to the database
+            await _context.SaveChangesAsync();
+
+            // Return a 201 Created response with the newly created client data
+            return CreatedAtAction(nameof(GetClientById), new { id = client.clientid }, client);
+        }
+
+        // Helper method for retrieving a specific client by ID (used in CreatedAtAction)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Client>> GetClientById(int id)
+        {
+            var client = await _context.client.FindAsync(id);
+
+            if (client == null)
+            {
+                return NotFound();
+            }
+
+            return client;
+        }
     }
 }
