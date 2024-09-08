@@ -25,21 +25,17 @@ namespace clientapi.Controllers
             return await _context.client.ToListAsync();
         }
 
-        // GET: api/Clients
+        // POST: api/Clients
         [HttpPost]
         public async Task<ActionResult<Client>> PostClients(Client client)
         {
-            // Add the new client to the database context
             _context.client.Add(client);
-
-            // Save changes to the database
             await _context.SaveChangesAsync();
 
-            // Return a 201 Created response with the newly created client data
             return CreatedAtAction(nameof(GetClientById), new { id = client.clientid }, client);
         }
 
-        // Helper method for retrieving a specific client by ID (used in CreatedAtAction)
+        // GET: api/Clients/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<Client>> GetClientById(int id)
         {
@@ -51,6 +47,27 @@ namespace clientapi.Controllers
             }
 
             return client;
+        }
+
+        // DELETE: api/Clients/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteClient(int id)
+        {
+            // Find the client by ID
+            var client = await _context.client.FindAsync(id);
+            if (client == null)
+            {
+                return NotFound();
+            }
+
+            // Remove the client from the context
+            _context.client.Remove(client);
+
+            // Save changes to the database
+            await _context.SaveChangesAsync();
+
+            // Return a NoContent response to indicate successful deletion
+            return NoContent();
         }
     }
 }
