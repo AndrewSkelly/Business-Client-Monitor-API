@@ -49,6 +49,62 @@ namespace clientapi.Controllers
             return client;
         }
 
+        // PUT: api/Clients/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateClient(int id, Client updatedClient)
+        {
+            // Check if the client ID in the URL matches the client ID in the request body
+            if (id != updatedClient.clientid)
+            {
+                return BadRequest("Client ID mismatch");
+            }
+
+            // Check if the client exists in the database
+            var client = await _context.client.FindAsync(id);
+            if (client == null)
+            {
+                return NotFound();
+            }
+
+            // Update the client's properties with the new data
+            client.name = updatedClient.name;
+            client.email = updatedClient.email;
+            client.phone = updatedClient.phone;
+            client.tags = updatedClient.tags;
+            client.notes = updatedClient.notes;
+
+            // Mark the entity as modified
+            _context.Entry(client).State = EntityState.Modified;
+
+            try
+            {
+                // Save changes to the database
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                // Check if the client still exists in the database
+                if (!ClientExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            // Return NoContent to indicate success with no content to return
+            return NoContent();
+        }
+
+        // Helper method to check if a client exists by ID
+        private bool ClientExists(int id)
+        {
+            return _context.client.Any(e => e.clientid == id);
+        }
+
+
         // DELETE: api/Clients/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteClient(int id)
