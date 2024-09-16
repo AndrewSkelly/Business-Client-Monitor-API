@@ -20,17 +20,17 @@ if (builder.Environment.IsDevelopment() || builder.Environment.IsProduction())
 
 // Retrieve PostgreSQL connection string based on environment
 string connectionString;
-if (builder.Environment.IsDevelopment())
-{
-    // Use LocalConnection in Development
-    connectionString = builder.Configuration.GetConnectionString("LocalConnection")
-        ?? throw new InvalidOperationException("LocalConnection string is not set.");
-}
-else if (builder.Environment.IsProduction())
+if (builder.Environment.IsProduction())
 {
     // Use DefaultConnection in Production
     connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
         ?? throw new InvalidOperationException("DefaultConnection string is not set.");
+}
+else if (builder.Environment.IsDevelopment())
+{
+    // Use LocalConnection in Development
+    connectionString = builder.Configuration.GetConnectionString("LocalConnection")
+        ?? throw new InvalidOperationException("LocalConnection string is not set.");
 }
 else
 {
