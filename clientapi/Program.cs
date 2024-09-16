@@ -51,8 +51,13 @@ app.UseHttpsRedirection();
 // Make sure CORS is used before UseAuthorization and MapControllers
 app.UseCors("AllowSpecificOrigin"); // Apply CORS policy here
 
+app.UseExceptionHandler("/Home/Error"); // Or your custom error handling route
+app.UseHsts(); // Optional, for secure HTTP
+
 app.UseAuthorization();
 
 app.MapControllers();
+
+
 
 app.Run();
