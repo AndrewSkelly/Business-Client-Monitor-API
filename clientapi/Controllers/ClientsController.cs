@@ -12,17 +12,31 @@ namespace clientapi.Controllers
     public class ClientsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<ClientsController> _logger;
 
-        public ClientsController(ApplicationDbContext context)
+        public ClientsController(ApplicationDbContext context, ILogger<ClientsController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: api/Clients
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Client>>> GetClients()
         {
-            return await _context.client.ToListAsync();
+            try
+            {
+                var clients = await _context.client.ToListAsync();
+                return Ok(clients);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception details
+                _logger.LogError(ex, "An error occurred while getting clients.");
+
+                // Return a generic error message to the client
+                return StatusCode(500, "An internal server error occurred.");
+            }
         }
 
         // POST: api/Clients
