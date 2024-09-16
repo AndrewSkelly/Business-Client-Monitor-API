@@ -10,16 +10,28 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Retrieve PostgreSQL password from environment variable
+var postgresPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
+
+// Build the full connection string, injecting the password from the environment variable
+var connectionString = $"Host=clientmanagerdb.postgres.database.azure.com;" +
+                       "Port=5433;" +
+                       "Username=postgres;" +
+                       $"Password={postgresPassword};" +
+                       "SSL Mode=require";
+
 // Configure PostgreSQL connection
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(connectionString));
 
 // Configure CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
-        builder => builder
-            .WithOrigins("http://localhost:5173", "http://127.0.0.1:5173", "https://business-client-monitor-j7ej42df5-andrewskellys-projects.vercel.app/") // Replace with your frontend URL
+        policyBuilder => policyBuilder
+            .WithOrigins("http://localhost:5173",
+                         "http://127.0.0.1:5173",
+                         "https://business-client-monitor-j7ej42df5-andrewskellys-projects.vercel.app/") // Replace with your frontend URL
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials()); // Include this if you need credentials (cookies, HTTP authentication)
