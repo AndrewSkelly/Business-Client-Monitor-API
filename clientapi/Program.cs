@@ -31,7 +31,7 @@ builder.Services.AddCors(options =>
         policyBuilder => policyBuilder
             .WithOrigins("http://localhost:5173",
                          "http://127.0.0.1:5173",
-                         "https://business-client-monitor-j7ej42df5-andrewskellys-projects.vercel.app/") // Replace with your frontend URL
+                         "https://business-client-monitor.vercel.app") // Replace with your frontend URL
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials()); // Include this if you need credentials (cookies, HTTP authentication)
