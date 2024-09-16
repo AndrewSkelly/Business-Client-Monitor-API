@@ -6,19 +6,30 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
-// Retrieve PostgreSQL password from environment variable
-var postgresPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
+// Configure Swagger for development
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen();
+}
 
-// Build the full connection string, injecting the password from the environment variable
-var connectionString = $"Host=clientmanagerdb.postgres.database.azure.com;" +
-                       "Port=5433;" +
-                       "Username=postgres;" +
-                       $"Password={postgresPassword};" +
-                       "SSL Mode=require";
+// Retrieve PostgreSQL connection string from environment variable
+// var connectionString = Environment.GetEnvironmentVariable("POSTGRES");
+
+
+// Retrieve PostgreSQL connection string based on environment
+string connectionString = builder.Environment.IsDevelopment()
+    ? builder.Configuration.GetConnectionString("LocalConnection")
+        ?? throw new InvalidOperationException("LocalConnection string is not set.")
+    : builder.Configuration.GetConnectionString("DefaultConnection")
+        ?? throw new InvalidOperationException("DefaultConnection string is not set.");
+
+// Ensure the connection string is not null or empty
+if (string.IsNullOrEmpty(connectionString))
+{
+    throw new InvalidOperationException("Connection string is not set.");
+}
 
 // Configure PostgreSQL connection
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -39,8 +50,9 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+
 // Configure the HTTP request pipeline.
-if (app.Environment.IsProduction())
+if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
@@ -48,16 +60,14 @@ if (app.Environment.IsProduction())
 
 app.UseHttpsRedirection();
 
-// Make sure CORS is used before UseAuthorization and MapControllers
-app.UseCors("AllowSpecificOrigin"); // Apply CORS policy here
+// Apply CORS policy before authorization
+app.UseCors("AllowSpecificOrigin");
 
-app.UseExceptionHandler("/Home/Error"); // Or your custom error handling route
-app.UseHsts(); // Optional, for secure HTTP
+app.UseExceptionHandler("/Home/Error"); // Ensure this points to a valid route or handler
+app.UseHsts(); // Optional, for secure HTTP in production
 
 app.UseAuthorization();
 
 app.MapControllers();
-
-
 
 app.Run();
