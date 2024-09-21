@@ -20,24 +20,29 @@ namespace clientapi.Controllers
             _logger = logger;
         }
 
-        // GET: api/Clients
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Client>>> GetClients()
+        public async Task<ActionResult<IEnumerable<Client>>> GetClients([FromQuery] List<string> tags = null)
         {
             try
             {
-                var clients = await _context.client.ToListAsync();
+                IQueryable<Client> query = _context.client;
+
+                if (tags != null && tags.Any())
+                {
+                    // Filter clients that have at least one matching tag
+                    query = query.Where(c => tags.Any(tag => c.tags.Contains(tag)));
+                }
+
+                var clients = await query.ToListAsync();
                 return Ok(clients);
             }
             catch (Exception ex)
             {
-                // Log the exception details
                 _logger.LogError(ex, "An error occurred while getting clients.");
-
-                // Return a generic error message to the client
                 return StatusCode(500, "An internal server error occurred.");
             }
         }
+
 
         // POST: api/Clients
         [HttpPost]
